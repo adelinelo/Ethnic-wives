@@ -1,0 +1,1305 @@
+**********************************************
+*
+*  The Spousal Bump: 
+*  Do cross-ethnic marriages increase political support in multiethnic democracies?
+*
+*  Data Replication
+*
+*  Claire Adida
+*  Nathan Combes
+*  Adeline Lo
+*  Alex Verink
+*
+**********************************************
+
+**********************************************
+* This code reads in Rounds 3 and 4 Afrobarometer data,
+* recodes relevent variables for analysis, and merges 
+* the two datasets.
+**********************************************
+
+
+**********************************************
+*
+*  Start by Cleaning Round 3 Afrobarometer Data
+*
+**********************************************
+
+clear matrix
+clear
+set mem 1000m
+
+*Set the working directory so that all of the filepaths are correct
+cd "H:\Ethnic Wives"
+use "ABR3Data.dta"  
+
+gen round=3
+
+**********************************************
+*create country dummies
+**********************************************
+* these should match R4 - we use the full list here from 1-18 
+* additional countries in R4 add from 19 on
+
+tab country, gen(dummy)
+rename dummy1 benin
+rename dummy2 botswana
+rename dummy3 capeverde
+rename dummy4 ghana
+rename dummy5 kenya
+rename dummy6 lesotho
+rename dummy7 madagascar
+rename dummy8 malawi
+rename dummy9 mali
+rename dummy10 mozambique
+rename dummy11 namibia
+rename dummy12 nigeria
+rename dummy13 senegal
+rename dummy14 safrica
+rename dummy15 tanzania
+rename dummy16 uganda
+rename dummy17 zambia
+rename dummy18 zimbabwe
+
+gen burkina=0
+gen liberia=0
+
+**********************************************
+* clean up country codes to match round 4 
+**********************************************
+
+*Zimbabwe
+replace country=20 if country==18
+*Zambia
+replace country=19 if country==17
+*Uganda
+replace country=18 if country==16
+*Tanzania
+replace country=17 if country==15
+*South Africa
+replace country=16 if country==14
+*Senegal
+replace country=15 if country==13
+*Nigeria
+replace country=14 if country==12
+*Namibia
+replace country=13 if country==11
+*Mozambique
+replace country=12 if country==10
+*Mali
+replace country=11 if country==9
+*Malawi
+replace country=10 if country==8
+*Madagascar
+replace country=9 if country==7
+*Lesotho
+replace country=7 if country==6
+*Kenya
+replace country=6 if country==5
+*Ghana
+replace country=5 if country==4
+*Cape Verde
+replace country=4 if country==3
+*Botswana
+replace country=2 if country==2
+*Benin
+replace country=1 if country==1
+
+* match names
+label define countrylabel 1 "Benin" 2 "Botswana" 3 "Burkina Faso" 4 "Cape Verde" 5 "Ghana" 6 "Kenya" 7 "Lesotho" 8 "Liberia" 9 "Madagascar" 10 "Malawi" 11 "Mali" 12 "Mozambique" 13 "Namibia" 14 "Nigeria" 15 "Senegal" 16 "South Africa" 17 "Tanzania" 18 "Uganda" 19 "Zambia" 20 "Zimbabwe"
+label values country countrylabel
+
+
+**********************************************
+*********** Independent Variables  ***********
+**********************************************
+
+**********************************************
+* Ethnicity concordance with Round 3 
+**********************************************
+* The first step is to use the .label define command to create a mapping between numeric values and the ethnicities. 
+* The second step is to associate a specific mapping with a particular variable using the .label values command. 
+label define ethniclabel 1 "English" 2 "Francais" 3 "Portugais" 100 "Afrikaans/Afrikaner/Boer" 101 "Ndebele" 102 "Xhosa" 103 "Pedi/Spedi/North Sotho" 104 "Sesotho/Sotho/South Sotho" 105 "Setswana/Tswana" 106 "Shangaan" 107 "Swazi" 108 "Venda" 109 "Zulu" 110 "Other White/European" 111 "Couloured" 112 "Indian" 113 "English" 120 "Fon" 121 "Adja" 122 "Bariba" 123 "Dendi" 124 "Yoruba" 125 "Ditamari" 126 "Peulh" 127 "Yoa" 128 "Haoussa" 129 "IdŽ" 130 "Lamba" 140 "Mokgatla" 141 "Mokwena" 142 "Mongwato" 143 "Mongwaketse" 144 "Motlokwa" 145 "Moherero" 146 "Morolong" 147 "Mosarwa" 148 "Mokalanga" 149 "Molete" 150 "Mmirwa" 151 "Motswapong" 152 "Mosobea" 153 "Motawana" 154 "Mokgalagadi" 155 "Moyei" 156 "Mohurutshe" 157 "Mombukushu" 158 "Monajwa" 159 "Mokhurutshe" 160 "Motalaote" 169 "Related to island origin" 170 "African" 171 "American or European" 172 "Related to age" 173 "Related to gender" 174 "Related to occupation/profession" 175 "Related to religion" 176 "Related to class" 177 "related to race" 178 "Related to politics/partisan" 180 "Akan" 181 "Ewe" 182 "Ga/Damgbe" 183 "Other northern languages" 184 "Gagomba" 185 "Dagaati" 200 "Kikuyu" 201 "Luo" 202 "Luhya" 203 "Kamba" 204 "Meru" 205 "Kisii" 206 "Kalenjin" 207 "Masaai" 208 "MijiKenda" 209 "Taita" 210 "Somali" 211 "Pokot" 212 "Turkana" 213 "Bajuni" 214 "Kuria" 215 "Teso" 216 "Rendille" 217 "Embu" 218 "Borana" 219 "Samburu" 220 "Bakoena" 221 "Basiea" 222 "Bafokeng" 223 "Bahlakoana" 224 "Batsoeneng" 225 "Batloung" 226 "Bataung" 227 "Baphuthing" 228 "Batebele" 229 "Bathepu" 230 "Batlokoa" 231 "Bakhatla" 232 "Makholokoe" 233 "Makhoakhoa" 234 "Barolong" 235 "Banareng" 236 "Mapele" 237 "Bakubung" 238 "Maswati" 239 "Mchegu" 240 "Antakarana" 241 "Antambahoaka" 242 "Antandroy" 243 "Antanosy" 244 "Antefasy" 245 "Antemoro" 246 "Antesaka" 248 "Bara" 249 "Betsileo" 250 "Betsimisaraka" 251 "Bezanozano" 252 "Mahafaly" 253 "Merina" 254 "Sakalava" 255 "Sihanaka" 256 "Tanala" 257 "Tsimihety" 258 "Vezo" 260 "Tumbuka" 261 "Nkhonde" 262 "Lambya" 263 "Chewa" 264 "Yao" 265 "Ngoni" 266 "Lomwe" 267 "MangÕanja" 268 "Sena" 269 "Sukwa" 270 "Senga" 271 "Tonga" 280 "Bambara" 281 "Peuhl/Fulfulde" 282 "Senufo" 283 "Mianka" 284 "Mossi" 285 "Sonink" 286 "Malink" 287 "Khasonk" 288 "Dogon" 289 "Bobo" 290 "Bozo" 291 "Arabe" 292 "Maure" 293 "Kakolo" 294 "Samoko" 295 "Sonrha" 296 "Bella" 297 "Tamasheq" 298 "Dafing" 300 "Makua" 301 "Sena" 302 "Ndau" 303 "Nyanja" 304 "Changana" 305 "Chope" 306 "Bitonga" 307 "Makonde" 308 "Chuabo" 309 "Ajua" 320 "Oshiwambo" 321 "Herero" 322 "Caprivian" 323 "Rukwangali" 324 "German" 325 "Afrikaaner" 326 "English" 327 "Nama" 328 "Damara" 329 "Lozi" 330 "Subia" 331 "White" 332 "Black" 333 "Coloured" 334 "Baster" 335 "Setswana" 336 "Angolan:Portuguese" 337 "Angolan:Rumbundu" 338 "Ndembele (Zimbabwe)" 339 "Kavango" 340 "Hausa" 341 "Igbo" 342 "Yoruba" 344 "Efik" 345 "Ebira" 346 "Fulani" 347 "Isoko" 348 "Ibibio" 349 "Kanuri" 350 "Tiv" 351 "Nupe" 352 "Ijaw" 353 "Edo" 354 "Igala" 355 "Urhobo" 356 "Idoma" 357 "Itsekiri" 358 "Ikwere" 360 "Wolof" 361 "Pular" 362 "Serer" 363 "Mandinka" 364 "Soninke" 365 "Diola" 366 "Manjack" 367 "Bambara" 368 "Bainouk" 369 "Bassari" 380 "Mnyakyusa" 381 "Mchaga" 382 "Mhaya" 383 "Mngoni" 384 "Mkwere" 385 "Mpare" 386 "Mhehe" 387 "Mmakonde" 388 "Myamwezi" 389 "Msukuma" 390 "Mmasai" 391 "Mmeru" 392 "Mkurya" 393 "Mgogo" 394 "Mluguru" 395 "Mfipa" 396 "Mmanyema" 397 "Mnyiramba" 398 "Mnyaturu" 405 "Akaramojonj" 406 "Alur" 407 "Ateso" 408 "Japadhola" 409 "Jonam" 410 "Kakwa" 411 "Kumam" 412 "Kuksabin" 413 "Luo" 414 "Lugbara" 415 "Mugwere" 416 "Madi" 417 "Muganda" 418 "Mugishu" 419 "Musoga" 420 "Bemba" 422 "Tonga" 423 "Lozi" 424 "Chewa" 425 "Nsenga" 426 "Tumbuka" 427 "Kaonde" 428 "Luvale" 429 "Namwanga" 430 "Mambwe" 431 "Lenje" 432 "Lunda" 433 "Ngoni" 435 "Bisa" 436 "Ila" 437 "Nkoya" 438 "Lala" 439 "Mbunda" 500 "Munyoli" 501 "Mufumbira" 502 "Muhororo" 503 "Mukiga" 504 "Mukonzo" 505 "Munyarwanda" 506 "Munyoro" 507 "Mutagwenda" 508 "Mutooro" 509 "Mwamba" 510 "Munyankole" 511 "Samia" 517 "Mutagwenda" 550 "Awori" 551 "Tapa" 553 "Kalabari" 554 "Birom" 555 "Shuwa-Arab" 556 "Jukun" 558 "Gwari" 559 "Anang" 560 "Ekoi" 561 "Ukwani" 562 "Igede" 563 "Ekpeye" 564 "Taroh" 565 "Ogoni" 566 "Sayawa" 567 "Okpella" 568 "Okirika" 570 "Bavudie" 571 "Mapokwana" 572 "Mantsosa" 573 "Baropoli" 575 "Balafe" 800 "Arab" 801 "Swahili" 802 "Indian" 803 "Digo" 804 "Giriama" 805 "Duruma" 806 "Chonyi" 807 "Mijikenda" 808 "Arab" 809 "Gunya" 810 "Teso" 811 "Wanga" 812 "Kabarasi" 813 "Bukusu" 814 "Ombuya" 815 "Nyala" 816 "Vatsotso" 817 "Tachoni" 818 "Nyore" 819 "Maragoli" 820 "Marama" 821 "Sabaot" 822 "Nandi" 823 "Kipsigis" 824 "Tugen" 825 "Keiyo" 826 "Ethiopian/Kenyan" 827 "Burji" 828 "Murule" 829 "Dagodia" 830 "Gari" 831 "Mupule" 832 "Shabelle" 833 "Gabawen" 834 "Garmug" 835 "Maimai" 860 "Senga" 861 "Swahili" 862 "Nyanja" 863 "Soli" 864 "Chokwe" 865 "Nyika" 866 "Luchazi" 867 "Lamba" 868 "Kunda" 869 "Tabwa" 870 "Takaleya" 871 "Aushi" 872 "Kalunda" 873 "Kwamashi" 874 "Lambia" 875 "Chisinga" 990 "National identity only" 995 "Other" 997 "Not Asked" 998 "Refused" 999 "DonÕt know" -1 "Missing Data"
+label values q79 ethniclabel
+*tribe question for R3. Ethnicity not asked in Malawi.
+* note 990=National identity only, 995=Other, 997=Not Asked, 998=Refused, 999=DonÕt know,-1=Missing Data*
+
+gen ethnic = .
+replace ethnic=1 if q79==510 
+*recode Ankole (Munyankole) as 1
+replace ethnic=2 if q79==180
+*recode Ashanti (Akan) as 2
+replace ethnic=3 if q79==280 
+*recode Bambara as 3
+*recode Somba as 4 - Note no Somba in this round. Nor is "Otamari" an option.
+replace ethnic=5 if q79==122 
+*recode Bariba as 5
+replace ethnic=6 if q79==420 
+*recode Bemba as 6
+replace ethnic=7 if q79==381
+*recode Chagga as 7 *Note, no Chagga in ABR3 or ABR4 but there is "Mchaga"
+*recode Coastal Muslim as 8 *Note no "Coastal Muslim" in any round
+replace ethnic=9 if q79==120
+*recode Fon as 9
+* (replace ethnic=10 if q79==2) Now just using "Non-National"
+*recode French as 10 - Note no French in this round. --> All going to be "Non-National"
+replace ethnic=11 if q79==346 
+*recode Fulani as 11
+replace ethnic=12 if q79==324 
+*recode German as 12
+** replace ethnic= if q79== *recode Gola as 13 No GOLA in round 3 **
+replace ethnic=14 if q79==340 
+*recode Hausa as 14
+*replace ethnic=16 if q79==443 
+replace ethnic=16 if q79==148 
+*recode Kalanga as 16 (also Mokalanga)
+replace ethnic=17 if q79==200 
+*recode Kikiyu as 17 
+replace ethnic=18 if q79== 358
+replace ethnic=18 if q79== 384
+*recode Kwere as 18* ***Ikwere is 358, Mkwere is 384**
+replace ethnic=19 if q79==431 
+*recode Lenje as 19
+replace ethnic=20 if q79==266 
+*recode Lomwe as 20
+replace ethnic=21 if q79==300 
+*recode Makua as 21
+replace ethnic=22 if q79==253 
+*recode Merina as 22
+replace ethnic=23 if q79==284 
+*recode Mossi as 23
+replace ethnic=24 if q79==124
+**replace ethnic= if q79== *recode Nago as* -- No NAGO in round 3. Using YORUBA**
+replace ethnic=25 if q79==302 
+*recode Ndau 25
+replace ethnic=26 if q79==303 
+*recode Nyanja 26
+replace ethnic=27 if q79==320 
+*recode Ovambo 27* -- No OVAMBO in round 3, use OSHIWAMBO **
+replace ethnic=28 if q79==126 
+replace ethnic=28 if q79==281
+*recode Peul 28
+** replace ethnic= if q79== *recode Ronga 29* -- No RONGA in Round 3 **
+** replace ethnic= if q79== *recode Shona 30* -- need clarification on which subgroup Shona **
+replace ethnic=31 if q79==295
+*recode Songhai 31* -- need clarification on which subgroup Songhai. I use Sonrha• **
+replace ethnic=32 if q79==103 
+*recode Sotho 32 if North Sotho
+replace ethnic=32 if q79==104 
+*recode Sotho 32 if South Sotho
+replace ethnic=33 if q79==105 
+replace ethnic=33 if q79==335
+*recode Tswana 33* -- need clarification on Tswana, is Setswana included **
+replace ethnic=34 if q79==360 
+*recode Wolof 34
+replace ethnic=35 if q79==102 
+*recode Xhosa 35
+replace ethnic=36 if q79==342 
+*recode Yoruba 36
+* (replace ethnic=37 if q79==338) using "Non-national"
+*recode Zimbabwean 37. --> All going to be "Non-National"
+replace ethnic=38 if q79==109 
+*recode Zulu 38
+replace ethnic=39 if q79==353
+*recode Edo 39 (Obasanjo's wife Stella is Edo, Nigeria R3)
+replace ethnic=40 if q79==260
+*recode Tumbuka 40 (Banda's wife Thandiwe is Tumbuka, Zambia R4)
+
+replace ethnic=41 if q79==1| q79==2 | q79==3 | q79==110 | q79==112 | q79==171 | q79==800 | q79==802
+*recode English/French/Portugais/Other White-European/Indian/American or European/Arab/Indian as "Non-National"
+
+replace ethnic=9999 if q79==990
+* national identity only
+replace ethnic=9999 if q79==995
+* other
+replace ethnic=9999 if q79==997
+* not asked
+replace ethnic=9999 if q79==998
+* refused
+replace ethnic=9999 if q79==999
+* don't know
+replace ethnic=9999 if q79==-1
+* missing
+* remaining . are all of "other ethnicities" that mean you are not going to be coethnic ever
+replace ethnic=0 if ethnic==.
+* pull back missing values etc and keep as "."
+replace ethnic=. if ethnic==9999
+
+
+**********************************************
+* Presidential Coethnicity
+**********************************************
+* Note that these codings are updated for a few cases (Botswana, Benin, Tanzania)
+* in the "Afrobarometer - Stage Two Data Cleaning.R file.
+
+gen prescoethnic=.
+
+* Uganda pres is Ankole
+replace prescoethnic=1 if country==18 & ethnic==1
+* Ghana pres is Ashanti
+replace prescoethnic=1 if country==5 & ethnic==2
+* Benin pres is Bargu (Note Bargu doesn't show up in ABR3 or ABR4)
+replace prescoethnic=1 if country==1 & ethnic==4
+* Kenya pres is Kikuyu
+replace prescoethnic=1 if country==6 & ethnic==17
+* Zambia pres is Lenje
+replace prescoethnic=1 if country==19 & ethnic==19
+* Malawi pres is Lomwe
+replace prescoethnic=1 if country==10 & ethnic==20
+* Tanzania pres is Makua
+replace prescoethnic=1 if country==17 & ethnic==21
+* Madagascar pres is Merina
+replace prescoethnic=1 if country==9 & ethnic==22
+* Namibia pres is Ovambo (Wambo)
+replace prescoethnic=1 if country==13 & ethnic==27
+* Mozambique pres is Ronga
+replace prescoethnic=1 if country==12 & ethnic==29
+* Zimbabwe pres is Shona
+replace prescoethnic=1 if country==20 & ethnic==30
+* Mali pres is Songhai
+replace prescoethnic=1 if country==11 & ethnic==31
+* Lesotho pres is Sotho
+replace prescoethnic=1 if country==7 & ethnic==32
+* Botswana pres is Tswana
+replace prescoethnic=1 if country==2 & ethnic==33
+* Senegal pres is Wolof
+replace prescoethnic=1 if country==15 & ethnic==34
+* South Africa pres is Xhosa
+replace prescoethnic=1 if country==16 & ethnic==35
+* Nigeria pres is Yoruba
+replace prescoethnic=1 if country==14 & ethnic==36
+*** if none of the above matches, then not coethnic
+** missing values taken out
+replace prescoethnic=999 if ethnic==.
+replace prescoethnic=0 if prescoethnic==.
+replace prescoethnic=. if prescoethnic==999
+
+**********************************************
+* Presidential Coethnicity - Alternative Coding
+**********************************************
+** prescoethnic2 is the same as prescoethnic except that we run a robustness check on 
+** President Guebuza of Mozambique (whose ethnicity is Ronga) by coding his coethnics as Makua (ethnic==21)
+
+gen prescoethnic2=.
+* Uganda pres is Ankole
+replace prescoethnic2=1 if country==18 & ethnic==1
+* Ghana pres is Ashanti
+replace prescoethnic2=1 if country==5 & ethnic==2
+* Benin pres is Bargu (Note Bargu doesn't show up in ABR3 or ABR4)
+replace prescoethnic2=1 if country==1 & ethnic==4
+* Kenya pres is Kikuyu
+replace prescoethnic2=1 if country==6 & ethnic==17
+* Zambia pres is Lenje
+replace prescoethnic2=1 if country==19 & ethnic==19
+* Malawi pres is Lomwe
+replace prescoethnic2=1 if country==10 & ethnic==20
+* Tanzania pres is Makua
+replace prescoethnic2=1 if country==17 & ethnic==21
+* Madagascar pres is Merina
+replace prescoethnic2=1 if country==9 & ethnic==22
+* Namibia pres is Ovambo (Wambo)
+replace prescoethnic2=1 if country==13 & ethnic==27
+* Mozambique pres is MAKUA (robustness check; in prescoethnic variable this is RONGA)
+replace prescoethnic2=1 if country==12 & ethnic==21
+* Zimbabwe pres is Shona
+replace prescoethnic2=1 if country==20 & ethnic==30
+* Mali pres is Songhai
+replace prescoethnic2=1 if country==11 & ethnic==31
+* Lesotho pres is Sotho
+replace prescoethnic2=1 if country==7 & ethnic==32
+* Botswana pres is Tswana
+replace prescoethnic2=1 if country==2 & ethnic==33
+* Senegal pres is Wolof
+replace prescoethnic2=1 if country==15 & ethnic==34
+* South Africa pres is Xhosa
+replace prescoethnic2=1 if country==16 & ethnic==35
+* Nigeria pres is Yoruba
+replace prescoethnic2=1 if country==14 & ethnic==36
+*** if none of the above matches, then not coethnic
+** missing values taken out
+replace prescoethnic2=999 if ethnic==.
+replace prescoethnic2=0 if prescoethnic2==.
+replace prescoethnic2=. if prescoethnic2==999
+
+**********************************************
+* Spousal Coethnicity
+**********************************************
+
+gen wifecoethnic=.
+* Uganda wife is Ankole
+replace wifecoethnic=1 if country==18 & ethnic==1
+* Ghana wife is Ashanti (Akan)
+replace wifecoethnic=1 if country==5 & ethnic==2
+* Benin wife is Fon
+replace wifecoethnic=1 if country==1 & ethnic==9
+* Kenya wife is Kikuyu
+replace wifecoethnic=1 if country==6 & ethnic==17
+* Zambia wife is Lenje
+replace wifecoethnic=1 if country==19 & ethnic==19
+* Malawi wife is "Zimbabwean" (ethnicity isn't asked in Malawi) Non-National
+replace wifecoethnic=1 if country==10 & ethnic==39
+* Burkina wife is "Ivorian" Non-National but Burkina Faso NOT part of round 3
+* Tanzania wife is "Chagga" (using Mchaga)
+replace wifecoethnic=1 if country==17 & ethnic==7
+* Madagascar wife is Merina
+replace wifecoethnic=1 if country==9 & ethnic==22
+* Namibia wife is Ovambo (Wambo)
+replace wifecoethnic=1 if country==13 & ethnic==27
+* Mozambique wife is Ndau
+replace wifecoethnic=1 if country==12 & ethnic==25
+* Zimbabwe wife is Shona
+replace wifecoethnic=1 if country==20 & ethnic==30
+* Mali wife is Bambara
+replace wifecoethnic=1 if country==11 & ethnic==3
+* Lesotho wife is Sotho (no Sothos in round 3)
+replace wifecoethnic=1 if country==7 & ethnic==32
+* Botswana wife is Kalanga
+replace wifecoethnic=1 if country==2 & ethnic==16
+* Senegal wife is French (no French in round 3) Non-National
+replace wifecoethnic=1 if country==15 & ethnic==39
+* South Africa wife is Zulu
+replace wifecoethnic=1 if country==16 & ethnic==38
+* Nigeria wife is EDO
+replace wifecoethnic=1 if country==14 & ethnic==39
+
+*** if none of the above matches, then not coethnic
+replace wifecoethnic=999 if ethnic==.
+replace wifecoethnic=0 if wifecoethnic==.
+replace wifecoethnic=. if wifecoethnic==999
+
+**********************************************
+* Spousal Coethnicity - Alternative Coding
+**********************************************
+** this is to account for a robustness check where Mali's leader's spouse (Lobbo Traore) who is Bambara, is also well known to have a mother who is Peulh
+** here wifecoethnic2 is the same as wifecoethnic except that the wifecoethnics of Mali are BAMBARA AND PEULH
+
+gen wifecoethnic2=.
+* Uganda wife is Ankole
+replace wifecoethnic2=1 if country==18 & ethnic==1
+* Ghana wife is Ashanti (Akan)
+replace wifecoethnic2=1 if country==5 & ethnic==2
+* Benin wife is Fon
+replace wifecoethnic2=1 if country==1 & ethnic==9
+* Kenya wife is Kikuyu
+replace wifecoethnic2=1 if country==6 & ethnic==17
+* Zambia wife is Lenje
+replace wifecoethnic2=1 if country==19 & ethnic==19
+* Malawi wife is "Zimbabwean" (ethnicity isn't asked in Malawi) Non-National
+replace wifecoethnic2=1 if country==10 & ethnic==39
+* Burkina wife is "Ivorian" Non-National but Burkina Faso NOT part of round 3
+* Tanzania wife is "Chagga" (using Mchaga)
+replace wifecoethnic2=1 if country==17 & ethnic==7
+* Madagascar wife is Merina
+replace wifecoethnic2=1 if country==9 & ethnic==22
+* Namibia wife is Ovambo (Wambo)
+replace wifecoethnic2=1 if country==13 & ethnic==27
+* Mozambique wife is Ndau
+replace wifecoethnic2=1 if country==12 & ethnic==25
+* Zimbabwe wife is Shona
+replace wifecoethnic2=1 if country==20 & ethnic==30
+* Mali wife is Bambara AND PEULH
+replace wifecoethnic2=1 if country==11 & ethnic==3
+replace wifecoethnic2=1 if country==11 & ethnic==28
+* Lesotho wife is Sotho (no Sothos in round 3)
+replace wifecoethnic2=1 if country==7 & ethnic==32
+* Botswana wife is Kalanga
+replace wifecoethnic2=1 if country==2 & ethnic==16
+* Senegal wife is French (no French in round 3) Non-National
+replace wifecoethnic2=1 if country==15 & ethnic==39
+* South Africa wife is Zulu
+replace wifecoethnic2=1 if country==16 & ethnic==38
+* Nigeria wife is EDO
+replace wifecoethnic2=1 if country==14 & ethnic==39
+
+*** if none of the above matches, then not coethnic
+replace wifecoethnic2=999 if ethnic==.
+replace wifecoethnic2=0 if wifecoethnic2==.
+replace wifecoethnic2=. if wifecoethnic2==999
+
+**********************************************
+* Spouse Non-National 
+**********************************************
+* Code the cases where the spouse is from a different country
+
+gen wifenonnational=.
+* Malawi
+replace wifenonnational=1 if country==10
+*Senegal
+replace wifenonnational=1 if country==15
+* cape verde unknown
+replace wifenonnational=9999 if country==4
+replace wifenonnational=0 if wifenonnational==.
+replace wifenonnational=. if wifenonnational==9999
+
+**********************************************
+* President and Spouse Same Ethnicity
+**********************************************
+* Code the cases where the president and the spouse are from the same ethnic group
+
+gen preswifesame=.
+replace preswifesame=1 if country==18
+replace preswifesame=1 if country==5
+replace preswifesame=1 if country==6
+replace preswifesame=1 if country==19
+replace preswifesame=1 if country==9
+replace preswifesame=1 if country==13
+replace preswifesame=1 if country==20
+replace preswifesame=1 if country==7
+replace preswifesame=9999 if country==4
+replace preswifesame=0 if preswifesame==.
+replace preswifesame=. if preswifesame==9999
+
+**********************************************
+* Coethnicicty with President and Spouse
+**********************************************
+* Code the cases where the respondent is coethnic 
+* with both the president as well as the spouse
+
+gen preswifecoethnic=.
+replace preswifecoethnic=1 if prescoethnic==1 & wifecoethnic==1
+replace preswifecoethnic=9999 if prescoethnic==. | wifecoethnic==.
+replace preswifecoethnic=0 if preswifecoethnic==.
+replace preswifecoethnic=. if preswifecoethnic==9999
+
+**********************************************
+* Age
+**********************************************
+gen age = q1
+replace age = . if q1==998 | q1==999 | q1==-1
+
+**********************************************
+* Gender
+**********************************************
+gen female = q101-1
+
+**********************************************
+* Urban/Rural
+**********************************************
+gen rural = urbrur - 1
+
+**********************************************
+* Race
+**********************************************
+gen race =1
+replace race=0 if q102==1
+replace race=. if q102==-1
+
+**********************************************
+* Head of Household
+**********************************************
+gen head = q2==1
+replace head = . if q2==9 | q2==998 | q2==-1
+
+**********************************************
+* Economic Perceptions
+**********************************************
+*Present Country Conditions
+gen cecon = q4a
+replace cecon = . if q4a==9 | q4a==998 | q4a==-1
+
+*Present Respondent Conditions
+gen recon = q4b
+replace recon = . if q4b==9 | q4b==998 | q4b==-1
+
+*Future Country Conditions
+gen fcecon = q7a
+replace fcecon=. if q7a==9 | q7a==998 | q7a==-1
+
+*Future Respondent Conditions
+gen frecon = q7b
+replace frecon=. if q7b==9 | q7b==998 | q7b==-1
+
+**********************************************
+* Interest in Public Affairs
+**********************************************
+gen interest = q16
+replace interest =. if q16==9|q16==98|q16==-1
+
+**********************************************
+* Politicians should favor their own group
+**********************************************
+gen favorOwnGroup=0
+replace favorOwnGroup=1 if q21==3|q21==4
+replace favorOwnGroup=. if q21==9|q21==98|q21==-1
+
+**********************************************
+* Poverty Indicators
+**********************************************
+gen noFood = q8a
+replace noFood = . if q8a==9|q8a==998|q8a==-1
+
+gen noWater = q8b
+replace noWater = . if q8b==9|q8b==998|q8b==-1
+
+**********************************************
+* "wealth" indicators
+**********************************************
+gen hasRadio = q93b
+replace hasRadio =. if q93b==9|q93b==98|q93b==-1|q93b==998
+
+gen hasTV = q93c
+replace hasTV =. if q93c==9|q93c==98|q93c==-1|q93c==998
+
+gen hasVehicle = 0
+replace hasVehicle = 1 if q93f==1 | q93e==1
+
+**********************************************
+* Voted in the last election
+**********************************************
+gen voted = 0
+replace voted = 1 if q30==1
+
+
+**********************************************
+* Education
+**********************************************
+gen educ = q90
+replace educ = . if q90==98 | q90==99 | q90==-1
+
+**********************************************
+* News Sources
+**********************************************
+gen radionews = q15a
+replace radionews=. if q15a==9|q15a==98|q15a==-1
+
+gen tvnews = q15b
+replace tvnews=. if q15b==9|q15b==98|q15b==-1
+
+gen papersnews = q15c
+replace papersnews=. if q15c==9|q15c==98|q15c==-1
+
+**********************************************
+* Interviewer Controls
+**********************************************
+* Age
+gen iage = q111
+
+* Education
+gen ieducation = q115
+
+* Gender
+gen igender = q112-1
+
+
+**********************************************
+************ Dependent Variables *************
+**********************************************
+
+**********************************************
+* Party which the respondent would vote for
+**********************************************
+gen vote = .
+** Uganda pres party is National Resistance Movement (in Round 3 this option is National Resistence Movement Organization=512) **
+replace vote=1 if country==18 & q99==512
+** Ghana pres party is New Patriotic Party (182) **
+replace vote=1 if country==5 & q99==182
+** Liberia pres party is Unity Party -- Round 3 no Liberia **
+** Nigeria pres party is People's Democratic Party (340) **
+replace vote=1 if country==14 & q99==340
+** Kenya pres party is Kibaki Democratic Party (203) **
+replace vote=1 if country==6 & q99==203
+** NARC (201) also supported Kibaki **
+replace vote=1 if country==6 & q99==201
+** Tanzania pres party is CCM (380) **
+replace vote=1 if country==17 & q99==380
+** Malawi pres party is  261=Democratic Progressive Party (DPP) **
+replace vote=1 if country==10 & q99==261
+** Madagascar pres party is TIM (240) **
+replace vote=1 if country==9 & q99==240
+** Burkina not in round 3
+** Benin pres party is Kerekou (126)
+replace vote=1 if country==1 & q99==126
+** Zambia pres party is MMD (422)
+replace vote=1 if country==19 & q99==422
+** Namibia pres party is SWAPO (320)
+replace vote=1 if country==13 & q99==320
+** Mozambique pres party is FRELIMO (300)
+replace vote=1 if country==12 & q99==300
+** Zimbabwe pres party is ZANU-PF (440)
+replace vote=1 if country==20 & q99==440
+** Mali pres party is Mouvement Citoyen ATT (293)
+replace vote=1 if country==11 & q99==293
+** Lesotho pres party is LCD (222)
+replace vote=1 if country==7 & q99==222
+** South Africa pres party is ANC (102)
+replace vote=1 if country==16 & q99==102
+** Botswana pres party is BDP (142)
+replace vote=1 if country==2 & q99==142
+** Senegal pres party is Senegalese Democratic Party (360)
+replace vote=1 if country==15 & q99==360
+** Missing values don't know refused
+replace vote=9999 if q99==998 | q99==999 | q99==-1
+** everything else is not the same party as the current president
+replace vote=0 if vote==.
+replace vote=. if vote==9999
+
+**********************************************
+* Presidential/Prime Minister Approval
+**********************************************
+gen approval = q68a
+replace approval = . if q68a==9 | q68a==98 | q68a==-1
+
+*Binary
+gen approvalBinary = 0
+replace approvalBinary = 1 if approval==3|approval==4
+replace approvalBinary =. if approval==.
+
+**********************************************
+* Perceptions of Respondent's Ethnic Group's Position
+**********************************************
+gen ethnicPolitical = 6-q80b
+replace ethnicPolitical =. if q80b==7|q80b==9|q80b==98|q80b==-1
+
+gen ethnicUnfair = q81
+replace ethnicUnfair =. if q81==7|q81==9|q81==98|q81==-1
+
+
+**********************************************
+********* Prepare for Merge and Save *********
+**********************************************
+
+**********************************************
+*Create ethnic variable for merge
+**********************************************
+
+gen R3Ethnic=q79
+gen R4Ethnic=.
+
+**********************************************
+* SAVE TO FILE
+**********************************************
+save "ABR3DataCleaned.dta", replace
+
+
+*******************************************
+*
+*  Now Clean Round 4 Afrobarometer Data
+*
+*******************************************
+
+clear matrix
+clear
+set mem 1000m
+
+use "ABR4Data.dta"
+gen round = 4
+
+**********************************************
+*create country dummies
+**********************************************
+
+tab country, gen(dummy)
+rename dummy1 benin
+rename dummy2 botswana
+rename dummy3 burkina
+rename dummy4 capeverde
+rename dummy5 ghana
+rename dummy6 kenya
+rename dummy7 lesotho
+rename dummy8 liberia
+rename dummy9 madagascar
+rename dummy10 malawi
+rename dummy11 mali
+rename dummy12 mozambique
+rename dummy13 namibia
+rename dummy14 nigeria
+rename dummy15 senegal
+rename dummy16 safrica
+rename dummy17 tanzania
+rename dummy18 uganda
+rename dummy19 zambia
+rename dummy20 zimbabwe
+
+**********************************************
+*********** Independent Variables  ***********
+**********************************************
+
+**********************************************
+* Ethnicity concordance with Round 3 
+**********************************************
+* The first step is to use the .label define command to create a mapping between numeric values and the ethnicities. 
+* The second step is to associate a specific mapping with a particular variable using the .label values command. 
+*label define ethniclabel 100 "Fon" 101 "Adja" 102 "Bariba" 103 "Dendi" 104 "Yoruba" 105 "Ditamari" 106 "Peulh" 107 "Yoa" 519 "Haoussa" 839 "Lamba" 140 "Mokgatla" 141 "Mokwena" 142 "Mongwato" 143 "Mongwaketse" 144 "Motlokwa" 145 "Moherero" 146 "Morolong" 147 "Mosarwa" 148 "Mokalanga" 159 "Molete" 155 "Mmirwa" 160 "Motswapong" 149 "Mosobea" 150 "Motawana" 151 "Mokgalagadi" 152 "Moyei" 153 "Mohurutshe" 158 "Mombukushu" 153 "Mokhurutshe" 164 "Motalaote" 260 "Akan" 261 "Ewe" 262 "Ga/Damgbe" 273 "Dagaati" 300 "Kikuyu" 301 "Luo" 302 "Luhya" 303 "Kamba" 304 "Meru" 305 "Kisii" 306 "Kalenjin" 307 "Masaai" 308 "MijiKenda" 309 "Taita" 310 "Somali" 311 "Pokot" 312 "Turkana" 313 "Bajuni" 314 "Kuria" 315 "Teso" 316 "Rendille" 317 "Embu" 318 "Borana" 319 "Samburu" 320 "Arab" 321 "Swahili" 322 "Indian" 500 "Arab" 990 "[Ghanaian/Kenyan/etc.] only or doesnÃ•t think in those terms" 420 "Antakarana" 421 "Antambahoaka" 422 "Antandroy" 423 "Antanosy" 424 "Antefasy" 425 "Antemoro" 426 "Antesaka" 427 "Bara" 428 "Betsileo" 429 "Betsimisaraka" 430 "Bezanozano" 431 "Mahafaly" 432 "Merina" 433 "Sakalava" 434 "Sihanaka" 435 "Tanala" 436 "Tsimihety" 437 "Vezo" 460 "Tumbuka" 461 "Nkhonde" 462 "Lambya" 463 "Chewa" 464 "Yao" 465 "Ngoni" 466 "Lomwe" 467 "Mang'anja" 468 "Sena" 469 "Sukwa" 470 "Senga" 471 "Tonga" 501 "Bambara" 512 "Peuhl/Fulfulde" 513 "Senufo" 513 "Mianka" 511 "Mossi" 514 "Sonink" 509 "Malink" 508 "Khasonk" 506 "Dogon" 503 "Bobo" 504 "Bozo" 518 "Kakolo" 515 "Sonrha" 502 "Bella" 516 "Tamasheq" 505 "Dafing" 540 "Makua" 541 "Sena" 542 "Ndau" 543 "Nyanja" 544 "Changana" 545 "Chope" 546 "Bitonga" 547 "Makonde" 548 "Chuabo" 549 "Ajua" 581 "Herero" 582 "Caprivian" 585 "Rukwangali" 584 "German" 580 "Afrikaaner" 586 "English" 588 "Nama" 589 "Damara" 590 "Lozi" 591 "Subia" 592 "Coloured" 596 "Baster" 706 "Setswana" 583 "Kavango" 620 "Hausa" 621 "Igbo" 622 "Yoruba" 623 "Efik" 624 "Ebira" 625 "Fulani" 626 "Isoko" 627 "Ibibio" 628 "Kanuri" 629 "Tiv" 630 "Nupe" 631 "Ijaw" 632 "Edo" 633 "Igala" 634 "Urhobo" 635 "Idoma" 637 "Ikwere" 638 "Awori" 644 "Gwari" 652 "Anang" 648 "Igede" 700 "Afikaans/Afrikaner/Boer" 701 "Ndebele" 702 "Xhosa" 703 "Pedi/Spedi/North Sotho" 704 "Sesotho/Sotho/South Sotho" 705 "Setswana/Tswana" 706 "Shangaan" 707 "Swazi" 708 "Venda" 709 "Zulu" 710 "Colored" 660 "Wolof" 661 "Pular" 662 "Serer" 663 "Mandinka" 664 "Soninke" 665 "Diola" 666 "Manjack" 663 "Bambara" 667 "Bainouk" 740 "Mnyakyusa" 741 "Mchaga" 742 "Mhaya" 743 "Mngoni" 744 "Mkwere" 745 "Mpare" 746 "Mhehe" 747 "Mmakonde" 748 "Myamwezi" 749 "Msukuma" 750 "Mmasai" 752 "Mkurya" 753 "Mgogo" 754 "Mluguru" 755 "Mfipa" 756 "Mmanyema" 757 "Mnyiramba" 758 "Mnyaturu" 789 "Alur" 787 "Ateso" 798 "Kakwa" 799 "Kumam" 790 "Lugbara" 794 "Mugwere" 791 "Madi" 780 "Muganda" 784 "Mugishu" 783 "Musoga" 786 "Munyoli" 803 "Mufumbira" 795 "Mukiga" 804 "Munyarwanda" 782 "Munyoro" 796 "Mutooro" 801 "Mwamba" 781 "Munyankole" 820 "Bemba" 822 "Tonga" 823 "Lozi" 824 "Chewa" 825 "Nsenga" 826 "Tumbuka" 827 "Kaonde" 828 "Luvale" 829 "Namwanga" 833 "Mambwe" 834 "Lenje" 803 "Lunda" 835 "Ngoni" 831 "Bisa" 837 "Ila" 832 "Nkoya" 845 "Lala" 838 "Mbunda" 840 "Senga" 821 "Nyanja" 836 "Soli" 841 "Chokwe" 842 "Luchazi" 839 "Lamba" 846 "Kunda" 844 "Takaleya" 843 "Kwamashi" 109 "Mina" 108 "Goun" -1 "Missing Data" 1 "English" 110 "Idacha" 111 "Shabe" 112 "Warma" 156 "Mongologa" 161 "Motlharo" 165 "Mopedi" 166 "Morotsi" 167 "Ndebele" 182 "Mossi" 184 "Peul" 185 "Gourmatche" 186 "Gourounsi" 187 "Bobo" 188 "Bissa" 189 "Dagari" 190 "Birifor" 191 "Lobi" 192 "Samo" 193 "Senoufo" 194 "Djerma" 195 "Goin" 196 "Turka" 197 "Yanan" 198 "Marka" 199 "Bwaba" 200 "Karaboro" 201 "Fuls" 202 "Sonra" 203 "Dioula" 204 "Bella" 220 "Related to regional origin" 221 "African" 222 "American or European" 223 "Related to Age" 224 "Related to Gender" 225 "Related to Occupation" 226 "Related to Religion" 227 "Related to Class" 228 "Related to Race" 229 "Related to political/partian affiliation" 263 "Dagomba" 264 "Nzema" 265 "Wassa" 266 "Brosa" 267 "Busanga" 268 "Sefwi" 269 "Hausa" 270 "Groma/Grumah" 271 "Frafra" 272 "Kokonba" 274 "Kusasi" 275 "Banda" 276 "Sisila" 277 "Waala" 278 "Kasina" 279 "Gonja" 280 "Mamprusi" 281 "Talensi" 282 "Buila" 283 "Brefo/Birfuo" 323 "Gabra" 340 "Mokoena" 341 "Motaung" 342 "Motebang" 343 "Mofokeng" 344 "Mosiea" 345 "Mohlakoana" 346 "Motsoeneng" 347 "Motloung" 348 "Mophuthing" 349 "Motlokoa" 350 "Motebele" 351 "Lekholokoe" 352 "Lekhokhoa" 353 "Mokubung" 354 "Mothepu" 355 "Mokhatla" 356 "Lepele" 357 "Mophiring" 358 "Mopeli" 359 "Mzema" 360 "Mbokwakoana" 361 "Monareng" 362 "Mokhebesi" 363 "Molefe" 364 "Mokhalo" 365 "Lezulu" 366 "Mochrist" 367 "Leswati" 368 "Amangwane" 369 "Lehlubi" 370 "Ledozeni" 380 "Bassa" 381 "Belle" 383 "Gbandi" 384 "Gio" 385 "Gola" 386 "Grebo" 387 "Kissi" 388 "Kpelle" 389 "Krahn" 390 "Kru" 391 "Lorma" 392 "Mandingo" 393 "Mano" 394 "Mende" 395 "Vai" 396 "Sarpo" 441 "Zafisoro" 442 "Sahafatra" 443 "Masikoro" 444 "Zaza lava mahafasa" 472 "Khokhola" 473 "Ndali" 475 "Chikunda" 477 "Wiza" 507 "Gana" 510 "Maure" 517 "Samogo" 550 "Lomue" 551 "Macheua" 552 "Magone" 553 "Manhungue" 554 "Tewe" 555 "Matsua" 556 "Ronga" 557 "Shona" 558 "Xitsau" 587 "Portuguese" 593 "Setswana" 594 "San" 595 "Mufwe" 597 "Uumbundu" 598 "Nyemba(Angolan)" 599 "Oshimbundu (Angolan)" 643 "Jukun" 649 "Babur" 650 "Gbagyi" 651 "Ugep" 653 "Kambari" 655 "Eggon" 656 "Mumuye" 657 "Marghi" 658 "Tangale" 659 "Eleme" 668 "Bassari" 669 "Maure" 711 "White/European" 712 "Coloured" 713 "Indian" 759 "Mbena" 760 "Muha" 761 "Mhangaza" 762 "Mwiraqi" 763 "Mjaluo" 764 "Mjita" 765 "Mkinga" 766 "Mmatengo" 767 "Mmwera" 768 "Mndali" 769 "Mndendeule" 770 "Mnyambo" 771 "Mpogoro" 772 "Msambaa" 773 "Myao" 774 "Mzaramo" 775 "Mzigua" 776 "Mzinza" 777 "Mrangi" 778 "Shirazi" 785 "Mukhonjo" 788 "Acholi" 792 "Japhadhola" 793 "Musamia" 797 "Langi" 800 "Mululi" 802 "Nubian" 805 "Kupsabiny" 830 "Lunda" 860 "Ndebele" 861 "Shona" 862 "Zezuru" 863 "Korekore" 864 "Karanga" 865 "Manyika" 866 "Ndau" 867 "Venda" 868 "Kalanga" 869 "Tonga" 995 "Others" 998 "Refused to answer" 999 "Don't know"
+
+* note 990=National identity only, 995=Other, 997=Not Asked, 998=Refused, 999=Don't know,-1=Missing Data*
+
+gen ethnic = .
+
+replace ethnic=1 if q79==781 
+*Ankole (Munyankole) as 1*
+replace ethnic=2 if q79==260
+* Ashanti (which I use Akan for, subgroup) as 2*
+replace ethnic=3 if q79==501
+*recode Bambara as 3*
+*recode Somba as 4 - Note no Somba in this round. Neither is there "Otamari"
+replace ethnic=5 if q79==102 
+*recode Bariba as 5*
+replace ethnic=6 if q79==820 
+*recode Bemba as 6
+replace ethnic=7 if q79==741
+*recode Chagga as 7 *Note, no Chagga in ABR3 or ABR4 but there is "Mchaga"
+replace ethnic=8 if q79==747
+replace ethnic=8 if q79==767
+replace ethnic=8 if q79==773
+*recode Coastal Muslim as 8 *Note no "Coastal Muslim" in any round, so use Mmakonde=747, Mmwera=767 and Myao=773 
+* as people who might view themselves as in-group with someone from Lindi area (Salma Kikwete, Tanzania spouse rd 4, identified as Coastal Muslim)
+replace ethnic=9 if q79==100 
+*recode Fon as 9
+* (replace ethnic=10 if q79==222) Now just using non-national
+*recode French as 10. Note, no French choice in AB4, only "American or European". --> All going to be "Non-National*
+replace ethnic=11 if q79==625 
+*recode Fulani as 11
+replace ethnic=12 if q79==584
+*recode German as 12
+replace ethnic=13 if q79==385 
+*recode Gola as 13
+replace ethnic=14 if q79==269
+replace ethnic=14 if q79==620
+*recode Hausa as 14*
+** replace ethnic=15 if q79== *recode Ivorian as 15 *Note no IVORIAN*
+replace ethnic=16 if q79==868 
+replace ethnic=16 if q79==148 
+*recode Kalanga as 16 (also Mokalanga)
+replace ethnic=17 if q79==300 
+*recode Kikiyu as 17 *
+replace ethnic=18 if q79==744 
+replace ethnic=18 if q79==637
+*recode Kwere as 18* ***Ikwere is 637, Mkwere is 744**
+replace ethnic=19 if q79==834 
+*recode Lenje as 19
+replace ethnic=20 if q79==466 
+*recode Lomwe as 20
+replace ethnic=21 if q79==540 
+*recode Makua as 21
+replace ethnic=22 if q79==432 
+*recode Merina as 22
+replace ethnic=23 if q79==182 
+*recode Mossi as 23
+replace ethnic=24 if q79==104
+**replace ethnic= if q79== *recode Nago as* -- No NAGO in round 4, so we use YORUBA**
+replace ethnic=25 if q79==542 
+*recode Ndau 25
+replace ethnic=26 if q79==543 
+replace ethnic=26 if q79==821
+*recode Nyanja 26
+replace ethnic=27 if q79==580 
+*recode Ovambo 27* -- No OVAMBO in round 4, I use WAMBO and OSHIWAMBO **
+replace ethnic=28 if q79==106 
+*recode Peul 28
+replace ethnic=29 if q79==556 
+*recode Ronga 29*
+replace ethnic=30 if q79==557 
+replace ethnic=30 if q79==861
+*recode Shona 30
+replace ethnic=31 if q79==515
+*recode Songhai 31* -- need clarification on which subgroup Songhai. I use Sonrhaâ€¢ **
+replace ethnic=32 if q79==705 
+*recode Sotho 32 if South Sotho
+replace ethnic=33 if q79==706
+replace ethnic=33 if q79==593
+*recode Tswana (and Setswana) as 33*
+replace ethnic=34 if q79==660 
+*recode Wolof 34
+replace ethnic=35 if q79==703 
+*recode Xhosa 35
+replace ethnic=36 if q79==104 
+*recode Yoruba 36
+** replace ethnic=37 if q79==338 *recode Zimbabwean 37 - no Zimbabwean in round 4*
+replace ethnic=38 if q79==710 
+*recode Zulu 38
+
+replace ethnic=39 if q79==632
+*recode Edo 39 (Obasanjo's wife Stella is Edo, Nigeria R3)
+replace ethnic=40 if q79==460|q79==826
+*recode Tumbuka 40 (Banda's wife Thandiwe is Tumbuka, Zambia R4)
+
+replace ethnic=41 if q79==1 | q79==222 | q79==320 | q79==322 | q79==584 | q79==586 | q79==587 | q79==700 | q79==711 | q79==713
+*recode English/American or European/Arab/Indian/German/English/Portugais/English/White European/Indian as "Non-National"
+
+replace ethnic=9999 if q79==995
+replace ethnic=9999 if q79==997
+replace ethnic=9999 if q79==998
+replace ethnic=9999 if q79==999
+replace ethnic=9999 if q79==-1
+* remaining . are all of "other ethnicities" that mean you are not going to be coethnic ever
+replace ethnic=0 if ethnic==.
+* pull back missing values etc and keep as "."
+replace ethnic=. if ethnic==9999
+
+**********************************************
+* Presidential Coethnicity
+**********************************************
+
+gen prescoethnic=.
+* Uganda pres is Ankole
+replace prescoethnic=1 if country==18 & ethnic==1
+* Ghana pres is Ashanti
+replace prescoethnic=1 if country==5 & ethnic==2
+* Liberia pres is Gola AND German, Gola
+replace prescoethnic=1 if country==8 & ethnic==13
+* Liberia pres is Gola AND German, German
+replace prescoethnic=1 if country==8 & ethnic==12
+* Nigeria pres is Hausa AND Fulani, Hausa
+replace prescoethnic=1 if country==14 & ethnic==14
+* Nigeria pres is Hausa AND Fulani, Fulani
+replace prescoethnic=1 if country==14 & ethnic==11
+* Kenya pres is Kikuyu
+replace prescoethnic=1 if country==6 & ethnic==17
+* Tanzania pres is Kwere
+replace prescoethnic=1 if country==17 & ethnic==18
+* Malawi pres is Lomwe
+replace prescoethnic=1 if country==10 & ethnic==20
+* Madagascar pres is Merina
+replace prescoethnic=1 if country==9 & ethnic==22
+* Burkina Faso pres is Mossi
+replace prescoethnic=1 if country==3 & ethnic==23
+* Benin pres is Nago-Bariba-Peul (use YORUBA in place of NAGO)
+replace prescoethnic=1 if country==1 & ethnic==24
+replace prescoethnic=1 if country==1 & ethnic==5
+replace prescoethnic=1 if country==1 & ethnic==28
+* Zambia pres is Nyanja
+replace prescoethnic=1 if country==19 & ethnic==26
+* Namibia pres is Ovambo (Wambo)
+replace prescoethnic=1 if country==13 & ethnic==27
+* Mozambique pres is Ronga
+replace prescoethnic=1 if country==12 & ethnic==29
+* Zimbabwe pres is Shona
+replace prescoethnic=1 if country==20 & ethnic==30
+* Mali pres is Songhai
+replace prescoethnic=1 if country==11 & ethnic==31
+* Lesotho pres is Sotho
+replace prescoethnic=1 if country==7 & ethnic==32
+* South Africa pres is Tswana
+replace prescoethnic=1 if country==16 & ethnic==33
+* Botswana pres is Tswana
+replace prescoethnic=1 if country==2 & ethnic==33
+* Senegal pres is Wolof
+replace prescoethnic=1 if country==15 & ethnic==34
+*** if none of the above matches, then not coethnic 
+replace prescoethnic=999 if ethnic==.
+replace prescoethnic=0 if prescoethnic==.
+replace prescoethnic=. if prescoethnic==999
+
+**********************************************
+* Presidential Coethnicity - Alternative Coding
+**********************************************
+** prescoethnic2 is the same as prescoethnic (just needed this variable for Round 3 for Mozambique president, coded as Makua instead of Ronga)
+gen prescoethnic2=.
+* Uganda pres is Ankole
+replace prescoethnic2=1 if country==18 & ethnic==1
+* Ghana pres is Ashanti
+replace prescoethnic2=1 if country==5 & ethnic==2
+* Liberia pres is Gola AND German, Gola
+replace prescoethnic2=1 if country==8 & ethnic==13
+* Liberia pres is Gola AND German, German
+replace prescoethnic2=1 if country==8 & ethnic==12
+* Nigeria pres is Hausa AND Fulani, Hausa
+replace prescoethnic2=1 if country==14 & ethnic==14
+* Nigeria pres is Hausa AND Fulani, Fulani
+replace prescoethnic2=1 if country==14 & ethnic==11
+* Kenya pres is Kikuyu
+replace prescoethnic2=1 if country==6 & ethnic==17
+* Tanzania pres is Kwere
+replace prescoethnic2=1 if country==17 & ethnic==18
+* Malawi pres is Lomwe
+replace prescoethnic2=1 if country==10 & ethnic==20
+* Madagascar pres is Merina
+replace prescoethnic2=1 if country==9 & ethnic==22
+* Burkina Faso pres is Mossi
+replace prescoethnic2=1 if country==3 & ethnic==23
+* Benin pres is Nago-Bariba-Peul (use YORUBA in place of NAGO)
+replace prescoethnic2=1 if country==1 & ethnic==24
+replace prescoethnic2=1 if country==1 & ethnic==5
+replace prescoethnic2=1 if country==1 & ethnic==28
+* Zambia pres is Nyanja
+replace prescoethnic2=1 if country==19 & ethnic==26
+* Namibia pres is Ovambo (Wambo)
+replace prescoethnic2=1 if country==13 & ethnic==27
+* Mozambique pres is Ronga
+replace prescoethnic2=1 if country==12 & ethnic==29
+* Zimbabwe pres is Shona
+replace prescoethnic2=1 if country==20 & ethnic==30
+* Mali pres is Songhai
+replace prescoethnic2=1 if country==11 & ethnic==31
+* Lesotho pres is Sotho
+replace prescoethnic2=1 if country==7 & ethnic==32
+* South Africa pres is Tswana
+replace prescoethnic2=1 if country==16 & ethnic==33
+* Botswana pres is Tswana
+replace prescoethnic2=1 if country==2 & ethnic==33
+* Senegal pres is Wolof
+replace prescoethnic2=1 if country==15 & ethnic==34
+*** if none of the above matches, then not coethnic 
+replace prescoethnic2=999 if ethnic==.
+replace prescoethnic2=0 if prescoethnic2==.
+replace prescoethnic2=. if prescoethnic2==999
+
+**********************************************
+* Spousal Coethnicity
+**********************************************
+
+gen wifecoethnic=.
+* Uganda wife is Ankole
+replace wifecoethnic=1 if country==18 & ethnic==1
+* Ghana wife is Ashanti
+replace wifecoethnic=1 if country==5 & ethnic==2
+* Liberia no husband (divorced and no info)
+* Nigeria wife is Hausa AND Fulani, Hausa
+replace wifecoethnic=1 if country==14 & ethnic==14
+* Nigeria wife is Hausa AND Fulani, Fulani
+replace wifecoethnic=1 if country==14 & ethnic==11
+* Kenya wife is Kikuyu
+replace wifecoethnic=1 if country==6 & ethnic==17
+* Tanzania wife is Coastal Muslim ethnic==8
+replace wifecoethnic=1 if country==17 & ethnic==8
+* Malawi wife is Zimbabwean *********** Non-national **************
+replace wifecoethnic=1 if country==10 & ethnic==39
+* Madagascar wife is Merina
+replace wifecoethnic=1 if country==9 & ethnic==22
+* Burkina Faso wife is Ivorian ************ Non-national **********
+replace wifecoethnic=1 if country==3 & ethnic==39
+* Benin wife is Fon
+replace wifecoethnic=1 if country==1 & ethnic==9
+* Zambia wife is TUMBUKA
+replace wifecoethnic=1 if country==19 & ethnic==40
+* Namibia wife is Ovambo (Wambo)
+replace wifecoethnic=1 if country==13 & ethnic==27
+* Mozambique wife is Ndau
+replace wifecoethnic=1 if country==12 & ethnic==25
+* Zimbabwe wife is Shona
+replace wifecoethnic=1 if country==20 & ethnic==30
+* Mali wife is Bambara
+replace wifecoethnic=1 if country==11 & ethnic==3
+* Lesotho wife is Sotho *Note in this dataset no Sothos
+replace wifecoethnic=1 if country==7 & ethnic==32
+* South Africa wife is Tswana
+replace wifecoethnic=1 if country==16 & ethnic==33
+* Botswana wife no information*********
+* Senegal wife is French ************ Non-national **********
+replace wifecoethnic=1 if country==15 & ethnic==39
+*** if none of the above matches, then not coethnic 
+replace wifecoethnic=999 if ethnic==.
+replace wifecoethnic=0 if wifecoethnic==.
+replace wifecoethnic=. if wifecoethnic==999
+
+**********************************************
+* Spousal Coethnicity - Alternative Coding
+**********************************************
+** this is to account for a robustness check where Mali's leader's spouse (Lobbo Traore) who is Bambara, is also well known to have a mother who is Peulh
+** here wifecoethnic2 is the same as wifecoethnic except that the wifecoethnics of Mali are BAMBARA AND PEULH
+
+gen wifecoethnic2=.
+* Uganda wife is Ankole
+replace wifecoethnic2=1 if country==18 & ethnic==1
+* Ghana wife is Ashanti
+replace wifecoethnic2=1 if country==5 & ethnic==2
+* Liberia no husband (divorced and no info)
+* Nigeria wife is Hausa AND Fulani, Hausa
+replace wifecoethnic2=1 if country==14 & ethnic==14
+* Nigeria wife is Hausa AND Fulani, Fulani
+replace wifecoethnic2=1 if country==14 & ethnic==11
+* Kenya wife is Kikuyu
+replace wifecoethnic2=1 if country==6 & ethnic==17
+* Tanzania wife is Coastal Muslim ethnic==8
+replace wifecoethnic2=1 if country==17 & ethnic==8
+* Malawi wife is Zimbabwean *********** Non-national **************
+replace wifecoethnic2=1 if country==10 & ethnic==39
+* Madagascar wife is Merina
+replace wifecoethnic2=1 if country==9 & ethnic==22
+* Burkina Faso wife is Ivorian ************ Non-national **********
+replace wifecoethnic2=1 if country==3 & ethnic==39
+* Benin wife is Fon
+replace wifecoethnic2=1 if country==1 & ethnic==9
+* Zambia wife is TUMBUKA
+replace wifecoethnic2=1 if country==19 & ethnic==40
+* Namibia wife is Ovambo (Wambo)
+replace wifecoethnic2=1 if country==13 & ethnic==27
+* Mozambique wife is Ndau
+replace wifecoethnic2=1 if country==12 & ethnic==25
+* Zimbabwe wife is Shona
+replace wifecoethnic2=1 if country==20 & ethnic==30
+* Mali wife is Bambara AND PEULH
+replace wifecoethnic2=1 if country==11 & ethnic==3
+replace wifecoethnic2=1 if country==11 & ethnic==28
+* Lesotho wife is Sotho *Note in this dataset no Sothos
+replace wifecoethnic2=1 if country==7 & ethnic==32
+* South Africa wife is Tswana
+replace wifecoethnic2=1 if country==16 & ethnic==33
+* Botswana wife no information*********
+* Senegal wife is French ************ Non-national **********
+replace wifecoethnic2=1 if country==15 & ethnic==39
+*** if none of the above matches, then not coethnic 
+replace wifecoethnic2=999 if ethnic==.
+replace wifecoethnic2=0 if wifecoethnic2==.
+replace wifecoethnic2=. if wifecoethnic2==999
+
+**********************************************
+* Spouse Non-National 
+**********************************************
+* Code the cases where the spouse is from a different country
+
+gen wifenonnational=.
+replace wifenonnational=1 if country==10
+replace wifenonnational=1 if country==3
+replace wifenonnational=1 if country==15
+* unknown info from liberia, cape verde and botswana
+replace wifenonnational=9999 if country==4
+replace wifenonnational=9999 if country==2
+replace wifenonnational=9999 if country==8
+replace wifenonnational=0 if wifenonnational==.
+replace wifenonnational=. if wifenonnational==9999
+
+**********************************************
+* President and Spouse Same Ethnicity
+**********************************************
+* Code the cases where the president and the spouse are from the same ethnic group
+
+gen preswifesame=.
+replace preswifesame=1 if country==18
+replace preswifesame=1 if country==5
+replace preswifesame=1 if country==14
+replace preswifesame=1 if country==6
+replace preswifesame=1 if country==9
+replace preswifesame=1 if country==13
+replace preswifesame=1 if country==20
+replace preswifesame=1 if country==7
+replace preswifesame=1 if country==16
+*missing values (can't tell if pres and wife same ethnicity because no info on wife)
+replace preswifesame=9999 if country==4
+replace preswifesame=9999 if country==2
+replace preswifesame=9999 if country==8
+replace preswifesame=0 if preswifesame==.
+replace preswifesame=. if preswifesame==9999
+
+**********************************************
+* Coethnicicty with President and Spouse
+**********************************************
+* Code the cases where the respondent is coethnic 
+* with both the president as well as the spouse
+
+gen preswifecoethnic=.
+replace preswifecoethnic=1 if prescoethnic==1 & wifecoethnic==1
+replace preswifecoethnic=9999 if prescoethnic==. | wifecoethnic==.
+replace preswifecoethnic=0 if preswifecoethnic==.
+replace preswifecoethnic=. if preswifecoethnic==9999
+
+**********************************************
+* Age
+**********************************************
+gen age = q1
+replace age = . if q1==998 | q1==999 | q1==-1
+
+**********************************************
+* Gender
+**********************************************
+gen female = q101-1
+
+**********************************************
+* Urban/Rural
+**********************************************
+gen rural = urbrur - 1
+
+**********************************************
+* Race
+**********************************************
+gen race =1
+replace race=0 if q102==1
+replace race=. if q102==-1
+
+**********************************************
+*Head of Household
+**********************************************
+gen head = q2==1
+replace head = . if q2==9 | q2==998 | q2==-1
+
+**********************************************
+*Economic Perceptions
+**********************************************
+*Present Country Conditions
+gen cecon = q4a
+replace cecon = . if q4a==9 | q4a==998 | q4a==-1
+
+*Present Respondent Conditions
+gen recon = q4b
+replace recon = . if q4b==9 | q4b==998 | q4b==-1
+
+*Future Country Conditions
+gen fcecon = q7a
+replace fcecon=. if q7a==9 | q7a==998 | q7a==-1
+
+*Future Respondent Conditions
+gen frecon = q7b
+replace frecon=. if q7b==9 | q7b==998 | q7b==-1
+
+**********************************************
+*Interest in Public Affairs
+**********************************************
+gen interest = q13
+replace interest =. if q13==9|q13==98|q13==-1
+
+**********************************************
+*Politicians should favor their own group
+**********************************************
+gen favorOwnGroup=0
+replace favorOwnGroup=1 if q17==3|q17==4
+replace favorOwnGroup=. if q17==9|q17==998|q17==-1
+
+**********************************************
+*Poverty Indicators
+**********************************************
+gen noFood = q8a
+replace noFood = . if q8a==9|q8a==998|q8a==-1
+
+gen noWater = q8b
+replace noWater = . if q8b==9|q8b==998|q8b==-1
+
+**********************************************
+*"wealth" indicators
+**********************************************
+gen hasRadio = q92a
+replace hasRadio =. if q92a==9|q92a==98|q92a==-1|q92a==998
+
+gen hasTV = q92b
+replace hasTV =. if q92b==9|q92b==98|q92b==-1|q92b==998
+
+gen hasVehicle = 0
+replace hasVehicle = 1 if q92c==1
+
+**********************************************
+*Voted in the last election
+**********************************************
+gen voted = 0
+replace voted = 1 if q23d==1
+
+**********************************************
+* Education
+**********************************************
+gen educ = q89
+replace educ = . if q89==98 | q89==99 | q89==-1
+
+**********************************************
+* News Sources
+**********************************************
+gen radionews = q12a
+replace radionews=. if q12a==9|q12a==98|q12a==-1
+
+gen tvnews = q12b
+replace tvnews=. if q12b==9|q12b==98|q12b==-1
+
+gen papersnews = q12c
+replace papersnews=. if q12c==9|q12c==98|q12c==-1
+
+**********************************************
+* Interviewer Controls
+**********************************************
+* Age
+gen iage = q111
+
+* Education
+gen ieducation = q115
+
+* Gender
+gen igender = q112-1
+
+
+**********************************************
+************ Dependent Variables *************
+**********************************************
+
+**********************************************
+* Party which the respondent would vote for
+**********************************************
+gen vote = .
+** Uganda pres party is National Resistance Movement (780) **
+replace vote=1 if country==18 & q97==780
+** Ghana pres party is New Patriotic Party (262) **
+replace vote=1 if country==5 & q97==262
+** Liberia pres party is Unity Party (409)**
+replace vote=1 if country==8 & q97==409
+** Nigeria pres party is People's Democratic Party (623) **
+replace vote=1 if country==14 & q97==623
+** Kenya pres party is Party of National Unity (302) **
+replace vote=1 if country==6 & q97==302
+** Tanzania pres party is CCM (740) **
+replace vote=1 if country==17 & q97==740
+** Malawi pres party is Democratic Progressive Party (461) **
+replace vote=1 if country==10 & q97==461
+** Madagascar pres party is TIM (420) **
+replace vote=1 if country==9 & q97==420
+** Burkina pres party is CDP (180)
+replace vote=1 if country==3 & q97==180
+** Benin pres party is Independent FCBE (100)
+replace vote=1 if country==1 & q97==100
+** Zambia pres party is MMD (822)
+replace vote=1 if country==19 & q97==822
+** Namibia pres party is SWAPO 590
+replace vote=1 if country==13 & q97==590
+** Mozambique pres party is FRELIMO
+replace vote=1 if country==12 & q97==540
+** Zimbabwe pres party is ZANU-PF
+replace vote=1 if country==20 & q97==861
+** Mali pres party is Mouvement Citoyen/ATT (515) [NO LONGER (787)]
+replace vote=1 if country==11 & q97==515
+** Lesotho pres party is LCD (340)
+replace vote=1 if country==7 & q97==340
+** South Africa pres party is ANC (702)
+replace vote=1 if country==16 & q97==702
+** Botswana pres party is BDP (142)
+replace vote=1 if country==2 & q97==142
+** Senegal pres party is Senegalese Democratic party PDS (660)
+replace vote=1 if country==15 & q97==660
+** Missing values don't know refused
+replace vote=9999 if q97==998 | q97==999 | q97==-1
+** everything else is not the same party as the current president
+replace vote=0 if vote==.
+replace vote=. if vote==9999
+
+**********************************************
+*Presidential/Prime Minister Approval
+**********************************************
+gen approval = q70a
+replace approval = . if q70a==9 | q70a==998 | q70a==-1
+
+*Binary
+gen approvalBinary = 0
+replace approvalBinary = 1 if approval==3|approval==4
+replace approvalBinary =. if approval==.
+
+
+**********************************************
+* Perceptions of Respondent's Ethnic Group's Position
+**********************************************
+gen ethnicPolitical = 6-q81
+replace ethnicPolitical =. if q81==7|q81==9|q81==98|q81==-1
+
+gen ethnicUnfair = q82
+replace ethnicUnfair =. if q82==7|q82==9|q82==98|q82==-1
+
+
+**********************************************
+********* Prepare for Merge and Save *********
+**********************************************
+
+**********************************************
+* Generate Ethnic variable for merge
+**********************************************
+gen R3Ethnic=.
+gen R4Ethnic=q79
+
+**********************************************
+* Save Data
+**********************************************
+save "ABR4DataCleaned.dta",replace
+
+**********************************************
+* Append the round 3 data   
+**********************************************
+
+append using "ABR3DataCleaned.dta"
+
+**********************************************
+* SAVE TO FILE
+**********************************************
+export delimited using "ABR3and4Data.csv", replace
+saveold "ABR3and4Data.dta",version(12)
+
